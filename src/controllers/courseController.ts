@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Course, Student } from '../models/index.js';
+import { Course, thoughts } from '../models/index.js';
 
 /**
  * GET All Courses /courses
@@ -24,9 +24,9 @@ export const getAllCourses = async(_req: Request, res: Response) => {
 export const getCourseById = async (req: Request, res: Response) => {
     const { courseId } = req.params;
     try {
-      const student = await Course.findById(courseId);
-      if(student) {
-        res.json(student);
+      const thoughts = await Course.findById(courseId);
+      if(thoughts) {
+        res.json(thoughts);
       } else {
         res.status(404).json({
           message: 'Volunteer not found'
@@ -97,8 +97,8 @@ export const deleteCourse = async (req: Request, res: Response) => {
           message: 'No course with that ID'
         });
       } else {
-        await Student.deleteMany({ _id: { $in: course.students } });
-        res.json({ message: 'Course and students deleted!' });
+        await thoughts.deleteMany({ _id: { $in: course.thoughtss } });
+        res.json({ message: 'Course and thoughtss deleted!' });
       }
       
     } catch (error: any) {

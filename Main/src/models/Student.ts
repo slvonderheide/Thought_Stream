@@ -6,14 +6,14 @@ interface IAssignment extends Document {
     score: number
 }
 
-interface IStudent extends Document {
+interface Ithoughts extends Document {
     first: string,
     last: string,
     github: string,
-    assignments: Schema.Types.ObjectId[]
+    reactions: Schema.Types.ObjectId[]
 }
 
-const assignmentSchema = new Schema<IAssignment>(
+const reactionschema = new Schema<IAssignment>(
     {
         assignmentId: {
             type: Schema.Types.ObjectId,
@@ -38,7 +38,7 @@ const assignmentSchema = new Schema<IAssignment>(
     }
 );
 
-const studentSchema = new Schema<IStudent>({
+const thoughtsSchema = new Schema<Ithoughts>({
     first: {
         type: String,
         required: true,
@@ -54,7 +54,7 @@ const studentSchema = new Schema<IStudent>({
         required: true,
         max_length: 50,
     },
-    assignments: [assignmentSchema],
+    reactions: [reactionschema],
 },
     {
         toJSON: {
@@ -64,6 +64,6 @@ const studentSchema = new Schema<IStudent>({
     }
 );
 
-const Student = model('Student', studentSchema);
+const thoughts = model('thoughts', thoughtsSchema);
 
-export default Student;
+export default thoughts;

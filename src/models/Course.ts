@@ -5,7 +5,7 @@ interface ICourse extends Document {
     inPerson: boolean,
     start: Date,
     end: Date,
-    students: Schema.Types.ObjectId[]
+    thoughtss: Schema.Types.ObjectId[]
 }
 
 const courseSchema = new Schema<ICourse>(
@@ -27,10 +27,10 @@ const courseSchema = new Schema<ICourse>(
             // Sets a default value of 12 weeks from now
             default: () => new Date(+new Date() + 84 * 24 * 60 * 60 * 1000),
         },
-        students: [
+        thoughtss: [
             {
                 type: Schema.Types.ObjectId,
-                ref: 'student',
+                ref: 'thoughts',
             },
         ],
     },
