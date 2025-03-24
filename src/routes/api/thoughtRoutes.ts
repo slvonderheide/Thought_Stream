@@ -2,16 +2,16 @@ import { Router } from 'express';
 const router = Router();
 import {
   getAllThoughts,
-  getThoughtsById,
+  getThoughtById,
   createThoughts,
-  deleteThoughts,
+  deleteThought,
 } from '../../controllers/thoughtsController.js';
 
-// /api/thoughtss
+// /api/thoughts
 router.route('/').get(getAllThoughts).post(createThoughts);
 
-// /api/thoughtss/:thoughtsId
-router.route('/:thoughtsId').get(getThoughtsById).delete(deleteThoughts);
+// /api/thoughts/:thoughtId
+router.route('/:thoughtId').get(getThoughtById).delete(deleteThought);
 
 
-export { router as thoughtsRouter} ;
+export default router ;

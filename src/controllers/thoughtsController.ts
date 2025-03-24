@@ -46,15 +46,15 @@ export const getAllThoughts = async (_req: Request, res: Response) => {
  * @param string id
  * @returns a single thoughts object
 */
-export const getThoughtsById = async (req: Request, res: Response) => {
-    const { thoughtsId } = req.params;
+export const getThoughtById = async (req: Request, res: Response) => {
+    const { thoughtId } = req.params;
   
-    if (!ObjectId.isValid(thoughtsId)) {
+    if (!ObjectId.isValid(thoughtId)) {
       return res.status(400).json({ message: 'Invalid Thought ID.' });
     }
   
     try {
-      const thought = await thoughts.findById(thoughtsId);
+      const thought = await thoughts.findById(thoughtId);
     
       if (!thought) {
         return res.status(404).json({ message: 'Thought not found' });
@@ -92,28 +92,28 @@ export const createThoughts = async (req: Request, res: Response) => {
  * @returns string 
 */
 
-export const deleteThoughts = async (req: Request, res: Response) => {
-    const { thoughtsId } = req.params;
+export const deleteThought = async (req: Request, res: Response) => {
+    const { thoughtId } = req.params;
   
-    if (!ObjectId.isValid(thoughtsId)) {
+    if (!ObjectId.isValid(thoughtId)) {
       return res.status(400).json({ message: 'Invalid Thought ID.' });
     }
   
     try {
-      const thought = await thoughts.findOneAndDelete({ _id: new ObjectId(thoughtsId) });
+      const thought = await thoughts.findOneAndDelete({ _id: new ObjectId(thoughtId) });
   
       if (!thought) {
         return res.status(404).json({ message: 'No such thought exists.' });
       }
   
       const course = await Course.findOneAndUpdate(
-        { thoughts: thoughtsId },
-        { $pull: { thoughts: thoughtsId } },
+        { thoughts: thoughtId },
+        { $pull: { thoughts: thoughtId } },
         { new: true }
       );
   
       if (!course) {
-        console.warn(`Thought ${thoughtsId} deleted, but no associated course found.`);
+        console.warn(`Thought ${thoughtId} deleted, but no associated course found.`);
         return res.json({ message: 'Thought deleted, but no associated course found.' });
       }
   
