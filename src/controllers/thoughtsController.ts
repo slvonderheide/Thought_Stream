@@ -1,13 +1,13 @@
 // ObjectId() method for converting thoughtsId string into an ObjectId for querying database
 import { ObjectId } from 'mongodb';
-import { thoughts, Course } from '../models/index.js';
+import { Thought, User as UsersModel } from '../models/index.js';
 import { Request, Response } from 'express';
 
 // TODO: Create an aggregate function to get the number of thoughts overall
 
 export const headCount = async () => {
     try {
-      const result = await thoughts.aggregate([{ $count: 'totalThoughts' }]);
+      const result = await Thought.aggregate([{ $count: 'totalThoughts' }]);
       return result.length > 0 ? result[0].totalThoughts : 0;
     } catch (error) {
       console.error('Error getting headcount:', error);
@@ -22,7 +22,7 @@ export const headCount = async () => {
 */
 export const getAllThoughts = async (_req: Request, res: Response) => {
     try {
-      const allThoughts = await thoughts.find();
+      const allThoughts = await Thought.find();
   
       if (allThoughts.length === 0) {
         return res.status(404).json({ message: 'No thoughts found.' });
@@ -54,7 +54,7 @@ export const getThoughtById = async (req: Request, res: Response) => {
     }
   
     try {
-      const thought = await thoughts.findById(thoughtId);
+      const thought = await Thought.findById(thoughtId);
     
       if (!thought) {
         return res.status(404).json({ message: 'Thought not found' });
@@ -73,9 +73,9 @@ export const getThoughtById = async (req: Request, res: Response) => {
  * @returns a single thoughts object
 */
 
-export const createThoughts = async (req: Request, res: Response) => {
+export const createThought = async (req: Request, res: Response) => {
     try {
-      const newThought = await thoughts.create(req.body);
+      const newThought = await Thought.create(req.body);
       return res.status(201).json(newThought);
     } catch (error: any) {
       if (error.name === 'ValidationError') {
@@ -100,21 +100,20 @@ export const deleteThought = async (req: Request, res: Response) => {
     }
   
     try {
-      const thought = await thoughts.findOneAndDelete({ _id: new ObjectId(thoughtId) });
+        const thought = await Thought.findById(thoughtId);
+        if (!thought) {
+          return res.status(404).json({ message: 'Thought not found' });
+        }
   
-      if (!thought) {
-        return res.status(404).json({ message: 'No such thought exists.' });
-      }
-  
-      const course = await Course.findOneAndUpdate(
+      const users = await UsersModel.findOneAndUpdate(
         { thoughts: thoughtId },
         { $pull: { thoughts: thoughtId } },
         { new: true }
       );
   
-      if (!course) {
-        console.warn(`Thought ${thoughtId} deleted, but no associated course found.`);
-        return res.json({ message: 'Thought deleted, but no associated course found.' });
+      if (!users) {
+        console.warn(`Thought ${thoughtId} deleted, but no associated users found.`);
+        return res.json({ message: 'Thought deleted, but no associated users found.' });
       }
   
       return res.json({ message: 'Thought successfully deleted.' });

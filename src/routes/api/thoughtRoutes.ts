@@ -3,12 +3,12 @@ const router = Router();
 import {
   getAllThoughts,
   getThoughtById,
-  createThoughts,
+  createThought,
   deleteThought,
 } from '../../controllers/thoughtsController.js';
 
 // /api/thoughts
-router.route('/').get(getAllThoughts).post(createThoughts);
+router.route('/').get(getAllThoughts).post(createThought);
 
 // /api/thoughts/:thoughtId
 router.route('/:thoughtId').get(getThoughtById).delete(deleteThought);

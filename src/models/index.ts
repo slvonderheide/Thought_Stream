@@ -1,4 +1,4 @@
-import thoughts from './Thought.js';
-import Course from './User.js';
+import Thought from './Thought.js';
+import User from './User.js';
 
-export { thoughts, Course };
+export { Thought, User };

@@ -1,6 +1,13 @@
 import { Schema, model,} from 'mongoose';
 
-const userSchema = new Schema(
+interface IUser extends Document {
+    username: string;
+    email: string;
+    thoughts: [{type: Schema.Types.ObjectId, ref: 'Thought'}]
+    friends: [{type: Schema.Types.ObjectId, ref: 'User'}]
+   }
+
+const userSchema = new Schema<IUser>(
     {
         username: {
             type: String,
@@ -34,10 +41,9 @@ const userSchema = new Schema(
         id: false
     }
 );
-userSchema.virtual('friendCount').get(function () {
-    return this.friends.length;
-}
-);
+userSchema.virtual('friendCount').get(function (this: any) {
+    return `${this.friends.length}`;
+  });
 const User = model('User', userSchema);
 
 export default User;
