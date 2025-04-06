@@ -59,6 +59,7 @@ const thoughtSchema = new Schema<IThought>(
     },
     reactions: [reactionSchema],
   },
+  
   {
     toJSON: {
       virtuals: true,

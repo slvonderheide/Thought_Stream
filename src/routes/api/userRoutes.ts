@@ -13,7 +13,7 @@ router.route('/').get(getAllUsers).post(createUser);
 
 // /api/userss/:usersId
 router
-  .route('/:usersId')
+  .route('/:userId')
   .get(getUserById)
   .put(updateUser)
   .delete(deleteUser);

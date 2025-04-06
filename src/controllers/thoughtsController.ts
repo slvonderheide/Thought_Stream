@@ -1,9 +1,19 @@
 // ObjectId() method for converting thoughtsId string into an ObjectId for querying database
-import { ObjectId } from 'mongodb';
-import { Thought, User as UsersModel } from '../models/index.js';
+//import { ObjectId } from 'mongodb';
+import { Thought } from '../models/index.js';
 import { Request, Response } from 'express';
 
 // TODO: Create an aggregate function to get the number of thoughts overall
+
+interface CustomRequest {
+  params: Record<string, any>;
+  body: any;
+}
+
+interface CustomResponse {
+  status: (code: number) => CustomResponse; 
+  json: (data:any) => void;
+}
 
 export const headCount = async () => {
     try {
@@ -20,71 +30,104 @@ export const headCount = async () => {
  * GET All thoughts /thoughts
  * @returns an array of thoughts
 */
-export const getAllThoughts = async (_req: Request, res: Response) => {
+export const getAllThoughts = async (_req: CustomRequest, res: CustomResponse) => {
     try {
-      const allThoughts = await Thought.find();
-  
-      if (allThoughts.length === 0) {
-        return res.status(404).json({ message: 'No thoughts found.' });
-      }
-  
-      const responseObj = {
-        thoughts: allThoughts,
-        headCount: await headCount(),
-      };
-  
-      return res.json(responseObj);
+      const getAllThoughts = await Thought.find();
+      res.json(getAllThoughts);
     } catch (error: any) {
       return res.status(500).json({ message: error.message });
     }
+};
+  interface GetThoughtById extends CustomRequest {
+    params: {
+      thoughtId: string;
+    }
   };
   
-  
-
-/**
- * GET thoughts based on id /thoughts/:id
- * @param string id
- * @returns a single thoughts object
-*/
-export const getThoughtById = async (req: Request, res: Response) => {
-    const { thoughtId } = req.params;
-  
-    if (!ObjectId.isValid(thoughtId)) {
-      return res.status(400).json({ message: 'Invalid Thought ID.' });
-    }
-  
+ export const GetThoughtById = async (req: GetThoughtById, res: Response): Promise<void> => {
     try {
-      const thought = await Thought.findById(thoughtId);
-    
+      const thought = await Thought.findById(req.params.thoughtId);
       if (!thought) {
-        return res.status(404).json({ message: 'Thought not found' });
+        res.status(404).json({ message: 'Thought not found' });
+        return;
       }
-  
-      return res.json({ thought });
-    } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      res.json(thought);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   };
   
+  interface CreateThought extends CustomRequest {
+    body: {
+        text: string;
+        username: string;
+    };
+}
 
-/**
- * POST thoughts /thoughts
- * @param object thoughts
- * @returns a single thoughts object
-*/
-
-export const createThought = async (req: Request, res: Response) => {
+export const createThought = async (req: CreateThought, res: Response): Promise<void> => {
     try {
       const newThought = await Thought.create(req.body);
-      return res.status(201).json(newThought);
+      res.status(201).json(newThought);
     } catch (error: any) {
       if (error.name === 'ValidationError') {
-        return res.status(400).json({ message: error.message });
-      }
-      return res.status(500).json({ message: error.message });
-    }
+      res.status(400).json({ message: error.message });
+    }}
   };
-  
+  interface AddReactionRequest extends CustomRequest {
+    params: {
+        thoughtId: string;
+    };
+    body: {
+        reactionBody: string;
+        username: string;
+    };
+}
+// add Reaction to thought
+export const addReaction = async (req: AddReactionRequest, res: Response): Promise<void> => {
+  try {
+    const thought = await Thought.findByIdAndUpdate(
+      req.params.thoughtId,
+      { $push: { reactions: req.body } },
+      { new: true }
+    );
+    if (!thought) {
+      res.status(404).json({ message: 'Thought not found' });
+      return;
+    }
+    res.json(thought);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+interface UpdateThoughtRequest extends CustomRequest {
+  params: {
+    thoughtId: string;
+  };
+  body: {
+    text?: string; 
+    username?: string;
+  };
+}
+
+// Update a Thought
+export const updateThought = async (req: UpdateThoughtRequest, res: Response): Promise<void> => {
+  try {
+    const updatedThought = await Thought.findByIdAndUpdate(
+      req.params.thoughtId,
+      req.body, 
+      { new: true, runValidators: true } 
+    );
+
+    if (!updatedThought) {
+       res.status(404).json({ message: 'Thought not found' });
+    }
+
+    res.json({ message: 'Thought updated successfully!', updatedThought });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
   
 /**
  * DELETE thoughts based on id /thoughts/:id
@@ -92,34 +135,27 @@ export const createThought = async (req: Request, res: Response) => {
  * @returns string 
 */
 
-export const deleteThought = async (req: Request, res: Response) => {
-    const { thoughtId } = req.params;
-  
-    if (!ObjectId.isValid(thoughtId)) {
-      return res.status(400).json({ message: 'Invalid Thought ID.' });
-    }
-  
-    try {
-        const thought = await Thought.findById(thoughtId);
-        if (!thought) {
-          return res.status(404).json({ message: 'Thought not found' });
-        }
-  
-      const users = await UsersModel.findOneAndUpdate(
-        { thoughts: thoughtId },
-        { $pull: { thoughts: thoughtId } },
-        { new: true }
-      );
-  
-      if (!users) {
-        console.warn(`Thought ${thoughtId} deleted, but no associated users found.`);
-        return res.json({ message: 'Thought deleted, but no associated users found.' });
-      }
-  
-      return res.json({ message: 'Thought successfully deleted.' });
-    } catch (error: any) {
-      console.error('Error deleting thought:', error);
-      return res.status(500).json({ message: error.message });
-    }
+interface deleteThought extends CustomRequest { 
+  params: {
+    thoughtId: string;
+    reeactionId: string;
   };
+}
+
+export const deleteThought = async (req: Request, res: Response) => {
+  try {
+    const deleteThought = await Thought.deleteOne(req.body);
+    res.status(201).json(deleteThought);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
   
+    export default { 
+        getAllThoughts,
+        GetThoughtById,
+        createThought,
+        addReaction,
+        updateThought,
+        deleteThought
+    };

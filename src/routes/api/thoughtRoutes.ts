@@ -2,7 +2,7 @@ import { Router } from 'express';
 const router = Router();
 import {
   getAllThoughts,
-  getThoughtById,
+  GetThoughtById,
   createThought,
   deleteThought,
 } from '../../controllers/thoughtsController.js';
@@ -11,7 +11,7 @@ import {
 router.route('/').get(getAllThoughts).post(createThought);
 
 // /api/thoughts/:thoughtId
-router.route('/:thoughtId').get(getThoughtById).delete(deleteThought);
+router.route('/:thoughtId').get(GetThoughtById).delete(deleteThought);
 
 
 export default router ;
